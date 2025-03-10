@@ -21,11 +21,15 @@ jobs:
       with:
         terraform_version: 1.4.6
 
+    - name: Set up Google Cloud credentials
+      run: |
+        echo "${{ secrets.GCP_SA_KEY }}" > terraform-sa-key.json
+
     - name: Terraform Init
       run: terraform init
 
     - name: Terraform Plan
-      run: terraform plan -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var="gcp_project=${{ secrets.GCP_PROJECT }}"
+      run: terraform plan -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var-file="terraform.tfvars"
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var="gcp_project=${{ secrets.GCP_PROJECT }}"
+      run: terraform apply -auto-approve -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var-file="terraform.tfvars"
