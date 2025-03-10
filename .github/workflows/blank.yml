@@ -1,7 +1,10 @@
-name: "Terraform GCP Deployment"
+name: Terraform GCP VM
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -10,24 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.4.6
 
-      - name: Authenticate to GCP
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          echo "$GOOGLE_CREDENTIALS" > gcp_key.json
-          gcloud auth activate-service-account --key-file=gcp_key.json
+    - name: Terraform Init
+      run: terraform init
 
-      - name: Terraform Init
-        run: terraform init
+    - name: Terraform Plan
+      run: terraform plan -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var="gcp_project=${{ secrets.GCP_PROJECT }}"
 
-      - name: Terraform Plan
-        run: terraform plan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var="gcp_sa_key=${{ secrets.GCP_SA_KEY }}" -var="gcp_project=${{ secrets.GCP_PROJECT }}"
